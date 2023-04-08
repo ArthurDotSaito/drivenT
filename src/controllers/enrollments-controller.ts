@@ -32,11 +32,16 @@ export async function getAddressFromCEP(req: AuthenticatedRequest, res: Response
   const cep = req.query.cep;
   try {
     const address = await enrollmentsService.getAddressFromCEP(String(cep));
-    console.log(address);
     res.status(httpStatus.OK).send(address);
   } catch (error) {
     if (error.name === 'NotFoundError') {
       return res.send(httpStatus.NO_CONTENT);
+    }
+    if (error.name === 'CepFormatInvalidError') {
+      return res.send(httpStatus.NO_CONTENT);
+    }
+    if (error.name === 'InvalidDataError') {
+      return res.send(httpStatus.BAD_REQUEST);
     }
   }
 }

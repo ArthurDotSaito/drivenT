@@ -8,7 +8,7 @@ export function handleApplicationErrors(
   res: Response,
   next: NextFunction,
 ) {
-  if (err.name === 'CannotEnrollBeforeStartDateError') {
+  if (err.name === 'CannotEnrollBeforeStartDateError' || err.name === 'CepFormatInvalidError') {
     return res.status(httpStatus.BAD_REQUEST).send({
       message: err.message,
     });
