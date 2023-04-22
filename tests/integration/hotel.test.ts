@@ -41,7 +41,7 @@ describe('GET /hotels', () => {
 
   describe('When token is valid', () => {
     it('Should respond with status 404 when there is no enrollment', async () => {
-      const token = generateValidToken();
+      const token = await generateValidToken();
 
       const response = await server.get('/hotels').set({
         Authorization: `Bearer ${token}`,
@@ -255,7 +255,6 @@ describe('GET /hotels/:hotelId', () => {
 
     it('Should respond with status 200', async () => {
       const user = await createUser();
-      const token = await generateValidToken(user);
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await prisma.ticketType.create({
         data: {
@@ -265,16 +264,14 @@ describe('GET /hotels/:hotelId', () => {
           includesHotel: true,
         },
       });
-
       await createTicket(enrollment.id, ticketType.id, 'PAID');
-
+      const token = await generateValidToken(user);
       const hotel = await createHotel();
       await createRoom(hotel.id);
 
-      const response = await server.get('/hotels/1').set({
+      const response = await server.get(`/hotels/${hotel.id}`).set({
         Authorization: `Bearer ${token}`,
       });
-
       expect(response.status).toBe(httpStatus.OK);
     });
   });
