@@ -6,7 +6,7 @@ async function getAllHotels(): Promise<Hotel[]> {
 }
 
 async function getHotelsRoomsById(hotelId: number): Promise<Hotel & { Rooms: Room[] }> {
-  return prisma.hotel.findFirst({
+  return prisma.hotel.findUnique({
     where: { id: hotelId },
     include: {
       Rooms: true,
