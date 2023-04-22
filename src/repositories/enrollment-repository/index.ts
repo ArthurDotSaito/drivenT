@@ -43,6 +43,7 @@ const enrollmentRepository = {
   findWithAddressByUserId,
   upsert,
   findById,
+  findEnrollmentById,
 };
 
 export default enrollmentRepository;
