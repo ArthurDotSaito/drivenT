@@ -6,14 +6,7 @@ import ticketsRepository from '@/repositories/tickets-repository';
 import { paymentRequired } from '@/errors/paymentRequired-error';
 
 async function getAllHotels(userId: number): Promise<Hotel[]> {
-  const verifyEnrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-  if (!verifyEnrollment) throw notFoundError();
-
-  const verifyTicket = await ticketsRepository.findTicketByEnrollmentId(verifyEnrollment.id);
-  if (!verifyTicket) throw notFoundError();
-
-  if (verifyTicket.status === 'RESERVED' || !verifyTicket.TicketType.includesHotel || verifyTicket.TicketType.isRemote)
-    throw paymentRequired();
+  await checkUserEnrollmentAndTicket(userId);
 
   const hotel = await hotelsRepository.getAllHotels();
   if (hotel.length === 0 || !hotel) throw notFoundError();
@@ -21,19 +14,23 @@ async function getAllHotels(userId: number): Promise<Hotel[]> {
 }
 
 async function getHotelsRoomsById(userId: number, hotelId: number): Promise<Hotel & { Rooms: Room[] }> {
+  await checkUserEnrollmentAndTicket(userId);
+
+  const hotelRooms = await hotelsRepository.getHotelsRoomsById(hotelId);
+  if (!hotelRooms || hotelRooms.Rooms.length === 0) throw notFoundError();
+
+  return hotelRooms;
+}
+
+async function checkUserEnrollmentAndTicket(userId: number): Promise<void> {
   const verifyEnrollment = await enrollmentRepository.findWithAddressByUserId(userId);
   if (!verifyEnrollment) throw notFoundError();
 
   const verifyTicket = await ticketsRepository.findTicketByEnrollmentId(verifyEnrollment.id);
   if (!verifyTicket) throw notFoundError();
 
-  if (verifyTicket.status === 'RESERVED' || !verifyTicket.TicketType.includesHotel || verifyTicket.TicketType.isRemote)
+  if (verifyTicket.status !== 'PAID' || !verifyTicket.TicketType.includesHotel || verifyTicket.TicketType.isRemote)
     throw paymentRequired();
-
-  const hotelRooms = await hotelsRepository.getHotelsRoomsById(hotelId);
-  if (!hotelRooms || hotelRooms.Rooms.length === 0) throw notFoundError();
-
-  return hotelRooms;
 }
 
 const hotelService = {

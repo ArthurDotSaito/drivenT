@@ -3,7 +3,7 @@ import httpStatus from 'http-status';
 import faker from '@faker-js/faker';
 import * as jwt from 'jsonwebtoken';
 import { cleanDb, generateValidToken } from '../helpers';
-import { createEnrollmentWithAddress, createTicket, createTicketType, createUser } from '../factories';
+import { createEnrollmentWithAddress, createSession, createTicket, createTicketType, createUser } from '../factories';
 import { createHotel, createHotelWithRooms, createRoom } from '../factories/hotel-factory';
 import app, { init } from '@/app';
 import { prisma } from '@/config';
@@ -21,13 +21,13 @@ const server = supertest(app);
 describe('GET /hotels', () => {
   it('Should respond with status 401 if no token is given', async () => {
     const response = await server.get('/hotels');
-    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+    expect(response.status).toEqual(httpStatus.UNAUTHORIZED);
   });
 
   it('Should respond with status 401 if token is invalid', async () => {
     const token = faker.lorem.word();
     const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
-    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+    expect(response.status).toEqual(httpStatus.UNAUTHORIZED);
   });
 
   it('Should respond with status 401 if there is no session for given token', async () => {
@@ -36,7 +36,7 @@ describe('GET /hotels', () => {
 
     const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+    expect(response.status).toEqual(httpStatus.UNAUTHORIZED);
   });
 
   describe('When token is valid', () => {
@@ -47,7 +47,7 @@ describe('GET /hotels', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.NOT_FOUND);
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
     });
 
     it('Should respond with status 404 when ticket was not not found for given enrollment', async () => {
@@ -60,7 +60,7 @@ describe('GET /hotels', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.NOT_FOUND);
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
     });
 
     it('Should respond with status 402 when ticket is not PAID', async () => {
@@ -75,7 +75,7 @@ describe('GET /hotels', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.PAYMENT_REQUIRED);
+      expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
     });
 
     it('Should respond with status 402 when ticket not include hotel', async () => {
@@ -97,7 +97,7 @@ describe('GET /hotels', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.PAYMENT_REQUIRED);
+      expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
     });
 
     it('Should respond with status 402 when ticket is to a remote event', async () => {
@@ -119,7 +119,7 @@ describe('GET /hotels', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.PAYMENT_REQUIRED);
+      expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
     });
 
     it('Should respond with status 200', async () => {
@@ -144,7 +144,7 @@ describe('GET /hotels', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.OK);
+      expect(response.status).toEqual(httpStatus.OK);
     });
   });
 });
@@ -152,13 +152,13 @@ describe('GET /hotels', () => {
 describe('GET /hotels/:hotelId', () => {
   it('Should respond with status 401 if no token is given', async () => {
     const response = await server.get('/hotels/1');
-    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+    expect(response.status).toEqual(httpStatus.UNAUTHORIZED);
   });
 
   it('Should respond with status 401 if token is invalid', async () => {
     const token = faker.lorem.word();
     const response = await server.get('/hotels/1').set('Authorization', `Bearer ${token}`);
-    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+    expect(response.status).toEqual(httpStatus.UNAUTHORIZED);
   });
 
   it('Should respond with status 401 if there is no session for given token', async () => {
@@ -167,19 +167,29 @@ describe('GET /hotels/:hotelId', () => {
 
     const response = await server.get('/hotels/1').set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+    expect(response.status).toEqual(httpStatus.UNAUTHORIZED);
   });
 
   describe('When token is valid', () => {
+    it('Should respond with status 400 when params hotelId is not a number', async () => {
+      const token = await generateValidToken();
+
+      const response = await server.get(`/hotels/q`).set({
+        Authorization: `Bearer ${token}`,
+      });
+
+      expect(response.status).toEqual(httpStatus.BAD_REQUEST);
+    });
+
     it('Should respond with status 404 when there is no enrollment', async () => {
       const { id } = await createHotelWithRooms();
-      const token = generateValidToken();
+      const token = await generateValidToken();
 
       const response = await server.get(`/hotels/${id}`).set({
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.NOT_FOUND);
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
     });
 
     it('Should respond with status 404 when ticket was not not found for given enrollment', async () => {
@@ -192,7 +202,7 @@ describe('GET /hotels/:hotelId', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.NOT_FOUND);
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
     });
 
     it('Should respond with status 402 when ticket is not PAID', async () => {
@@ -207,7 +217,7 @@ describe('GET /hotels/:hotelId', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.PAYMENT_REQUIRED);
+      expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
     });
 
     it('Should respond with status 402 when ticket not include hotel', async () => {
@@ -229,7 +239,7 @@ describe('GET /hotels/:hotelId', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.PAYMENT_REQUIRED);
+      expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
     });
 
     it('Should respond with status 402 when ticket is to a remote event', async () => {
@@ -251,7 +261,7 @@ describe('GET /hotels/:hotelId', () => {
         Authorization: `Bearer ${token}`,
       });
 
-      expect(response.status).toBe(httpStatus.PAYMENT_REQUIRED);
+      expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
     });
 
     it('Should respond with status 200', async () => {
@@ -273,7 +283,7 @@ describe('GET /hotels/:hotelId', () => {
       const response = await server.get(`/hotels/${hotel.id}`).set({
         Authorization: `Bearer ${token}`,
       });
-      expect(response.status).toBe(httpStatus.OK);
+      expect(response.status).toEqual(httpStatus.OK);
     });
   });
 });
