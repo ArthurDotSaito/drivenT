@@ -16,7 +16,9 @@ export async function getAllHotels(req: AuthenticatedRequest, res: Response, nex
 export async function getHotelsRoomsById(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const userId = req.userId;
-    const hotelId = Number(req.params);
+    const hotelId = +req.params.hotelId;
+    if (isNaN(hotelId)) return res.sendStatus(httpStatus.BAD_REQUEST);
+
     const hotelRoom = await hotelService.getHotelsRoomsById(userId, hotelId);
     return res.status(httpStatus.OK).send(hotelRoom);
   } catch (error) {

@@ -4,7 +4,7 @@ import faker from '@faker-js/faker';
 import * as jwt from 'jsonwebtoken';
 import { cleanDb, generateValidToken } from '../helpers';
 import { createEnrollmentWithAddress, createTicket, createTicketType, createUser } from '../factories';
-import { createHotel, createRoom } from '../factories/hotel-factory';
+import { createHotel, createHotelWithRooms, createRoom } from '../factories/hotel-factory';
 import app, { init } from '@/app';
 import { prisma } from '@/config';
 
@@ -172,9 +172,10 @@ describe('GET /hotels/:hotelId', () => {
 
   describe('When token is valid', () => {
     it('Should respond with status 404 when there is no enrollment', async () => {
+      const { id } = await createHotelWithRooms();
       const token = generateValidToken();
 
-      const response = await server.get('/hotels/1').set({
+      const response = await server.get(`/hotels/${id}`).set({
         Authorization: `Bearer ${token}`,
       });
 

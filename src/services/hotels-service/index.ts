@@ -31,7 +31,7 @@ async function getHotelsRoomsById(userId: number, hotelId: number): Promise<Hote
     throw paymentRequired();
 
   const hotelRooms = await hotelsRepository.getHotelsRoomsById(hotelId);
-  if (!hotelRooms) throw notFoundError();
+  if (!hotelRooms || hotelRooms.Rooms.length === 0) throw notFoundError();
 
   return hotelRooms;
 }
