@@ -38,14 +38,8 @@ export function handleApplicationErrors(
     });
   }
 
-  if (err.name === 'PaymentRequired') {
-    return res.status(httpStatus.PAYMENT_REQUIRED).send({
-      message: err.message,
-    });
-  }
-
-  if (err.name === 'BadRequestError') {
-    return res.status(httpStatus.BAD_REQUEST).send({
+  if (err.name === 'CannotListHotelsError') {
+    return res.status(httpStatus.NOT_FOUND).send({
       message: err.message,
     });
   }
