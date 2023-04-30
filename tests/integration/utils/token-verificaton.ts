@@ -2,7 +2,7 @@ import supertest from 'supertest';
 import httpStatus from 'http-status';
 import * as jwt from 'jsonwebtoken';
 import faker from '@faker-js/faker';
-import { createUser } from '../factories';
+import { createUser } from '../../factories';
 import app from '@/app';
 
 const server = supertest(app);

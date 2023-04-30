@@ -7,15 +7,16 @@ import ticketsRepository from '@/repositories/tickets-repository';
 
 async function checkEnrollmentAndTicket(userId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-  if (!enrollment) {
-    throw notFoundError();
-  }
+  if (!enrollment) throw notFoundError();
+
   const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
   if (!ticket) throw notFoundError();
 
   if (!ticket || ticket.status === 'RESERVED' || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
     throw forbiddenError();
   }
+
+  return;
 }
 
 async function checkRoomAndCapacity(roomId: number) {
