@@ -10,8 +10,8 @@ bookingRouter.get('/', getUserBookings);
 bookingRouter.post('/', validateBody(PostBookingIdSchema), createUserBooking);
 bookingRouter.put(
   '/:bookingId',
-  validateParams(ParamsRoomIdSchema),
   validateBody(PostBookingIdSchema),
+  validateParams(ParamsRoomIdSchema),
   updateUserBooking,
 );
 

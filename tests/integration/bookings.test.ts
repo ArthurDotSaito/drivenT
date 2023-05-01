@@ -127,10 +127,68 @@ describe('PUT /booking/:bookingId', () => {
 
       const response = await server
         .put(`/booking/1`)
-        .send({ roomId: 1 })
+        .send({ roomId: room.id })
         .set('Authorization', `Bearer ${properties.token}`);
 
       expect(response.status).toEqual(httpStatus.FORBIDDEN);
+    });
+
+    it('should respond 403 if roomId is already Booked', async () => {
+      const properties = await createCorrectProperties();
+      const room = await createRoom(properties.hotel.id); //should change this, if the database becomes 1:N
+
+      await createBooking(properties.user.id, room.id);
+
+      const response = await server
+        .put('/booking/1')
+        .set('Authorization', `Bearer ${properties.token}`)
+        .send({ roomId: room.id });
+
+      expect(response.status).toEqual(httpStatus.FORBIDDEN);
+    });
+
+    it('should respond 403 if booking is from another user', async () => {
+      const properties = await createCorrectProperties();
+      const otherUser = await createCorrectProperties();
+      const createdHotel = await createHotel();
+      const createdRoom = await createRoom(createdHotel.id);
+
+      await createBooking(otherUser.user.id, createdRoom.id);
+
+      const response = await server
+        .put('/booking/1')
+        .set('Authorization', `Bearer ${properties.token}`)
+        .send({ roomId: createdRoom.id });
+
+      expect(response.status).toEqual(httpStatus.FORBIDDEN);
+    });
+
+    it('Should respond with status 200 if everything is OK', async () => {
+      const properties = await createCorrectProperties();
+      const room = await createRoomWithCapacity(properties.hotel.id, 1); //should change this, if the database becomes 1:N
+      const booking = await createBooking(properties.user.id, room.id);
+      const newRoom = await createRoomWithCapacity(properties.hotel.id, 1);
+
+      const response = await server
+        .put(`/booking/${booking.id}`)
+        .send({ roomId: newRoom.id })
+        .set('Authorization', `Bearer ${properties.token}`);
+
+      expect(response.status).toEqual(httpStatus.OK);
+    });
+
+    it('Should respond with correct bookingId if everything is OK', async () => {
+      const properties = await createCorrectProperties();
+      const room = await createRoomWithCapacity(properties.hotel.id, 1); //should change this, if the database becomes 1:N
+      const booking = await createBooking(properties.user.id, room.id);
+      const newRoom = await createRoomWithCapacity(properties.hotel.id, 1);
+
+      const response = await server
+        .put(`/booking/${booking.id}`)
+        .send({ roomId: newRoom.id })
+        .set('Authorization', `Bearer ${properties.token}`);
+
+      expect(response.body).toMatchObject({ bookingId: expect.any(Number) });
     });
   });
 });

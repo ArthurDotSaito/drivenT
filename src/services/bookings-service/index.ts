@@ -22,7 +22,7 @@ async function checkEnrollmentAndTicket(userId: number) {
 async function checkRoomAndCapacity(roomId: number) {
   const room = await bookingsRepository.getBookingRoom(roomId);
   if (!room) throw notFoundError();
-  if (room.capacity < room.Booking.length) throw forbiddenError();
+  if (room.capacity <= room.Booking.length) throw forbiddenError();
 }
 
 async function getUserBookings(userId: number) {
@@ -43,11 +43,13 @@ async function updateUserBooking(userId: number, roomId: number, bookingId: numb
   await checkEnrollmentAndTicket(userId);
   await checkRoomAndCapacity(roomId);
 
-  const booking = await bookingsRepository.getUserBookings(userId);
-  if (!booking) throw forbiddenError();
+  const checkIfRoomIsAlreadyBooked = await bookingsRepository.findBookingByRoomId(roomId);
+  if (checkIfRoomIsAlreadyBooked) throw forbiddenError();
 
-  const updateBooking = await bookingsRepository.updateUserBooking(userId, roomId, bookingId);
-  return updateBooking;
+  const booking = await bookingsRepository.getUserBookingsByUserId(userId);
+  if (!booking || booking.id !== bookingId) throw forbiddenError();
+
+  return await bookingsRepository.updateUserBooking(userId, roomId, bookingId);
 }
 
 const bookingsService = {
