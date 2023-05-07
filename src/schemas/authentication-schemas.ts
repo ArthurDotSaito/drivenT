@@ -1,4 +1,5 @@
 import Joi from 'joi';
+// eslint-disable-next-line import/namespace
 import { SignInParams } from '@/services';
 
 export const signInSchema = Joi.object<SignInParams>({

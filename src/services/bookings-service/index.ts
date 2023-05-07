@@ -1,6 +1,5 @@
 import { notFoundError } from '@/errors';
 import { forbiddenError } from '@/errors/forbidden-error';
-import { noReserveError } from '@/errors/noReserve-error';
 import bookingsRepository from '@/repositories/bookings-repository';
 import enrollmentRepository from '@/repositories/enrollment-repository';
 import ticketsRepository from '@/repositories/tickets-repository';
